@@ -1,0 +1,129 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.0.2
+
+commands:
+  install_bun:
+    description: "Install the Bun runtime and add it to PATH"
+    steps:
+      - run:
+          name: Install Bun
+          command: |
+            curl -fsSL https://bun.sh/install | bash
+            echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
+            echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+
+jobs:
+  lint_code:
+    executor: node/default
+    steps:
+      - checkout
+
+      - install_bun
+
+      - run:
+          name: Install dependencies
+          command: bun install
+
+      - run:
+          name: Lint code
+          command: bun run lint
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+            - package.json
+            - bun.lock
+            - src
+
+  run_tests:
+    executor: node/default
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - install_bun
+
+      - run:
+          name: Run tests
+          command: bun run test
+
+  build:
+    executor: node/default
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - install_bun
+
+      - run:
+          name: Build
+          command: bun run build
+
+  run_release:
+    executor: node/default
+    steps:
+      - checkout
+
+      - install_bun
+
+      - run:
+          name: Install dependencies
+          command: bun install
+
+      - run:
+          name: Set up git credentials
+          command: |
+            git config --global user.email $GIT_EMAIL
+            git config --global user.name $GIT_NAME
+
+      - run:
+          name: Run release
+          command: |
+            bun run release
+            git push --follow-tags "https://${GH_TOKEN}@github.com/Arseyillion/ecndevspace-ui.git" main
+
+  publish_to_npm:
+    executor: node/default
+    steps:
+      - checkout
+
+      - install_bun
+
+      - run:
+          name: Install dependencies
+          command: bun install
+
+      - run:
+          name: Publish to npm
+          command: |
+            CURRENT_VERSION=$(npm show ecndevspace-ui version 2>/dev/null || echo "0.0.0")
+            LOCAL_VERSION=$(node -pe "require('./package.json').version")
+
+            if [ "$CURRENT_VERSION" != "$LOCAL_VERSION" ]; then
+              echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+              npm publish
+            else
+              echo "Versions are the same. Skipping npm publish."
+            fi
+
+workflows:
+  build_app:
+    jobs:
+      - lint_code
+      - run_tests:
+          requires:
+            - lint_code
+      - build:
+          requires:
+            - run_tests
+      - publish_to_npm:
+          requires:
+            - build
