@@ -25,7 +25,12 @@ export default [
       commonjs(),
       typescript({
         tsconfig: "./tsconfig.json", // Specify the path to your build tsconfig
-        exclude: ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx", "**/*.stories.ts", "**/*.stories.js"] // Exclude test files from the build 
+        exclude: [
+          "**/__tests__/**", 
+          "**/*.test.ts", 
+          "**/*.test.tsx", 
+          "**/*.stories.{js,jsx,ts,tsx}"
+        ] // Exclude test files from the build 
       }),
       postcss({
         extensions: [".css", ".scss"], // Specify the file extensions to process,
@@ -39,6 +44,6 @@ export default [
     input: "src/index.ts", // Input for the TypeScript declaration files
     output: [{ file: "dist/index.d.ts", format: "esm" }], // Output for the TypeScript declaration files
     plugins: [dts()], // Use the dts plugin to generate TypeScript declaration files
-    external: [/\.css$/], // Exclude CSS and SCSS files from the declaration files
+    external: [/\.s?css$/], // Exclude CSS and SCSS files from the declaration files
   }
 ];

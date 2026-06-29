@@ -51,7 +51,7 @@ jobs:
 
       - run:
           name: Run tests
-          command: bun run test
+          command: bun run test:ci
 
   build:
     executor: node/default
@@ -102,6 +102,10 @@ jobs:
           command: bun install
 
       - run:
+          name: Build package
+          command: bun run build
+
+      - run:
           name: Publish to npm
           command: |
             CURRENT_VERSION=$(npm show ecndevspace-ui version 2>/dev/null || echo "0.0.0")
@@ -117,13 +121,27 @@ jobs:
 workflows:
   build_app:
     jobs:
-      - lint_code
+      - lint_code:
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
       - run_tests:
           requires:
             - lint_code
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
       - build:
           requires:
             - run_tests
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
       - publish_to_npm:
           requires:
             - build
+          filters:
+            branches:
+              only: main
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
