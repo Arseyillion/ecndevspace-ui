@@ -1,6 +1,6 @@
 {
   "name": "ecndevspace-ui",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "type": "module",
   "description": "This is a react component library built by Emmanuel Chukwuemeka Nwuju for EcnDevSpace. It contains a collection of reusable React components that can be used to build user interfaces.",
   "main": "dist/cjs/index.js",
