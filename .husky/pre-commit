@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This command below ensures that the script exits immediately if a command exits with a non-zero status, treats unset variables as an error, and prevents errors in a pipeline from being masked.
+set -euo pipefail
+
+# Run tests before commit
+bun x jest
+
+# Run lint before commit
+bun run lint
+
+# Run build before commit
+bun run build
