@@ -131,9 +131,15 @@ workflows:
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
-      - build:
+      - run_release:
           requires:
             - run_tests
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+      - build:
+          requires:
+            - run_release
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
