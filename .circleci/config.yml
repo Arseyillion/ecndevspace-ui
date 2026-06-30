@@ -135,12 +135,16 @@ workflows:
           requires:
             - run_tests
           filters:
+            branches:
+              only: main
             tags:
-              only: /^v[0-9]+(\.[0-9]+)*.*/
+              ignore: /.*/
       - build:
           requires:
-            - run_release
+            - run_tests
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
       - publish_to_npm:
@@ -148,6 +152,6 @@ workflows:
             - build
           filters:
             branches:
-              only: main
+              ignore: /.*/
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
